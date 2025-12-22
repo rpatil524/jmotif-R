@@ -3,22 +3,18 @@ This is addressing project deletion following your email.
 ===
 Please see the problems shown on
 <https://cran.r-project.org/web/checks/check_results_jmotif.html>.
-Please correct before 2025-11-15 to safely retain your package on CRAN.
-Note that this will be the *final* reminder.
+Please correct before 2026-01-15 to safely retain your package on CRAN.
 ===
 
-I've fixed RcppArmadillo-related issues by removing hard requirement for C++ 11.
-
-Some bugs popped up and I fixed those as well.
+I've fixed DESCRIPTION by removing system requirement for C++.
 
 Tests pass and checks as well.
 
 Have a great day! Thank you!
 
-
 ## Changes
 
-Build routines and some sources.
+Removed C++ requirement from DESCRIPTION
 
 ## Test environments
 * Ubuntu LTS 22.04.05 (localhost), R 4.5.1
