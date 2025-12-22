@@ -18,6 +18,5 @@ Suggests:
 LinkingTo:
     Rcpp
 LazyData: true
-SystemRequirements: C++
 License: GPL-2
 RoxygenNote: 7.3.3
