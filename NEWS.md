@@ -1,3 +1,6 @@
+# Version 1.2.1
+* Fixed CRAN WARN issue by removing C++ requirement from description
+
 # Version 1.2.0
 * Fixed blocking C++ issues with RcppArmaddillo 
 * Removed hard requirement for C++ 11
