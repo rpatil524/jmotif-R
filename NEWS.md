@@ -1,3 +1,15 @@
+# Version 1.3.0
+* Cross-implementation alignment with the saxpy (Python) reference and the
+  Matrix Profile / MASS convention:
+  - znorm now uses POPULATION standard deviation (divide by n) instead of
+    sample std (n-1). Each normalized window then has empirical variance
+    exactly 1, the assumption behind SAX's equiprobable Gaussian breakpoints.
+  - SAX symbol assignment maps a value exactly on a breakpoint to the symbol
+    ABOVE the cut (cuts[j] <= ts[i]), matching the jmotif Java original and
+    saxpy. Previously a strict `<` mapped on-cut values to the symbol below.
+  NOTE: both are behavioral changes -- SAX words for windows whose normalized
+  PAA values fall near a breakpoint may differ from 1.2.x output.
+
 # Version 1.2.1
 * Fixed CRAN WARN issue by removing C++ requirement from description
 
