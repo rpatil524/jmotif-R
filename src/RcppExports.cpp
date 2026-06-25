@@ -12,15 +12,16 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // find_discords_brute_force
-Rcpp::DataFrame find_discords_brute_force(NumericVector ts, int w_size, int discords_num);
-RcppExport SEXP _jmotif_find_discords_brute_force(SEXP tsSEXP, SEXP w_sizeSEXP, SEXP discords_numSEXP) {
+Rcpp::DataFrame find_discords_brute_force(NumericVector ts, int w_size, int discords_num, double n_threshold);
+RcppExport SEXP _jmotif_find_discords_brute_force(SEXP tsSEXP, SEXP w_sizeSEXP, SEXP discords_numSEXP, SEXP n_thresholdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type ts(tsSEXP);
     Rcpp::traits::input_parameter< int >::type w_size(w_sizeSEXP);
     Rcpp::traits::input_parameter< int >::type discords_num(discords_numSEXP);
-    rcpp_result_gen = Rcpp::wrap(find_discords_brute_force(ts, w_size, discords_num));
+    Rcpp::traits::input_parameter< double >::type n_threshold(n_thresholdSEXP);
+    rcpp_result_gen = Rcpp::wrap(find_discords_brute_force(ts, w_size, discords_num, n_threshold));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -308,7 +309,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_jmotif_find_discords_brute_force", (DL_FUNC) &_jmotif_find_discords_brute_force, 3},
+    {"_jmotif_find_discords_brute_force", (DL_FUNC) &_jmotif_find_discords_brute_force, 4},
     {"_jmotif_euclidean_dist", (DL_FUNC) &_jmotif_euclidean_dist, 2},
     {"_jmotif_early_abandoned_dist", (DL_FUNC) &_jmotif_early_abandoned_dist, 3},
     {"_jmotif_find_discords_hotsax", (DL_FUNC) &_jmotif_find_discords_hotsax, 6},

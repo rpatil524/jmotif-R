@@ -25,11 +25,13 @@ discord_record find_best_discord_hotsax(std::vector<double>* ts, int w_size, dou
         continue;
       }
 
-      // subseries extraction
+      // subseries extraction, z-normalized: HOT-SAX measures z-normed SHAPE
+      // similarity, so the NN distance MUST be on z-normed windows (matching the
+      // saxpy and Java implementations and this package's own brute force).
       std::vector<double>::const_iterator first = ts->begin() + candidate_idx;
       std::vector<double>::const_iterator last = ts->begin() +  candidate_idx + w_size;
       std::vector<double> candidate_subseq(first, last);
-      // std::vector<double> candidate_seq = _znorm(candidate_subseq, n_threshold);
+      std::vector<double> candidate_seq = _znorm(candidate_subseq, n_threshold);
 
       VisitRegistry innerRegistry(ts->size() - w_size);
       bool doRandomSearch = true;
@@ -42,21 +44,24 @@ discord_record find_best_discord_hotsax(std::vector<double>* ts, int w_size, dou
         innerRegistry.markVisited(inner_idx);
 
         // Rcout << innerRegistry.unvisited_count << ", " << inner_idx << "\n";
-        if( std::abs(inner_idx-candidate_idx) > w_size){
+        // exclude overlapping subsequences: |i - j| >= w_size (non-overlap),
+        // i.e. skip when the gap is < w_size. (>= matches saxpy.)
+        if( std::abs(inner_idx-candidate_idx) >= w_size){
 
-          // subseries extraction
+          // subseries extraction, z-normalized (see candidate above)
           std::vector<double>::const_iterator first = ts->begin() + inner_idx;
           std::vector<double>::const_iterator last = ts->begin() + inner_idx + w_size;
           std::vector<double> curr_subseq(first, last);
-          // std::vector<double> curr_seq = _znorm(curr_subseq, n_threshold);
+          std::vector<double> curr_seq = _znorm(curr_subseq, n_threshold);
 
-          double dist = _euclidean_dist(&candidate_subseq, &curr_subseq);
+          // early-abandoned at the running NN distance (NaN once it exceeds it)
+          double dist = _early_abandoned_dist(&candidate_seq, &curr_seq, nnDistance);
           distance_calls++;
 
-          if(dist < nnDistance){
+          if(!std::isnan(dist) && dist < nnDistance){
             nnDistance = dist;
           }
-          if(dist < best_so_far_distance){
+          if(!std::isnan(dist) && dist < best_so_far_distance){
             doRandomSearch = false;
             //Rcout << "  abandoning early search... \n";
             break;
@@ -75,20 +80,20 @@ discord_record find_best_discord_hotsax(std::vector<double>* ts, int w_size, dou
           innerRegistry.markVisited(inner_idx);
           //Rcout << innerRegistry.unvisited_count << ", " << inner_idx << "\n";
 
-          if( std::abs(inner_idx-candidate_idx) > w_size){
+          if( std::abs(inner_idx-candidate_idx) >= w_size){
 
             std::vector<double>::const_iterator first = ts->begin() + inner_idx;
             std::vector<double>::const_iterator last = ts->begin() + inner_idx + w_size;
             std::vector<double> curr_subseq(first, last);
-            //std::vector<double> curr_seq = _znorm(curr_subseq, n_threshold);
+            std::vector<double> curr_seq = _znorm(curr_subseq, n_threshold);
 
-            double dist = _euclidean_dist(&candidate_subseq, &curr_subseq);
+            double dist = _early_abandoned_dist(&candidate_seq, &curr_seq, nnDistance);
             distance_calls++;
 
-            if(dist < nnDistance){
+            if(!std::isnan(dist) && dist < nnDistance){
               nnDistance = dist;
             }
-            if(dist < best_so_far_distance){
+            if(!std::isnan(dist) && dist < best_so_far_distance){
               //Rcout << "  abandoning random search... \n";
               break;
             }
@@ -98,7 +103,12 @@ discord_record find_best_discord_hotsax(std::vector<double>* ts, int w_size, dou
       }
       //Rcout << " ended random iterations\n";
 
-      if(nnDistance > best_so_far_distance && nnDistance < std::numeric_limits<double>::max()){
+      // Update on a strictly larger NN distance, or on an exact tie with a
+      // smaller index -- a deterministic lowest-index tie-break so the result
+      // is independent of the (RNG-driven) visit order (matches saxpy).
+      if(nnDistance < std::numeric_limits<double>::max() &&
+         (nnDistance > best_so_far_distance ||
+          (nnDistance == best_so_far_distance && candidate_idx < best_so_far_index))){
         best_so_far_distance = nnDistance;
         best_so_far_index = candidate_idx;
         best_so_far_word = it->second;
@@ -204,7 +214,9 @@ Rcpp::DataFrame find_discords_hotsax(NumericVector ts, int w_size, int paa_size,
     distances.push_back(rec.nn_distance);
     distance_calls.push_back(rec.dist_calls);
 
-    int start = rec.index - w_size;
+    // exclusion zone +/-(w_size-1) around the found discord (markVisited end is
+    // exclusive), matching saxpy.
+    int start = rec.index - w_size + 1;
     if(start<0){
       start = 0;
     }

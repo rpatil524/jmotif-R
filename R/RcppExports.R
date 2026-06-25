@@ -6,6 +6,7 @@
 #' @param ts the input timeseries.
 #' @param w_size the sliding window size.
 #' @param discords_num the number of discords to report.
+#' @param n_threshold the z-normalization threshold.
 #' @useDynLib jmotif
 #' @export
 #' @references Keogh, E., Lin, J., Fu, A.,
@@ -16,8 +17,8 @@
 #' plot(ecg0606[1:600], type = "l", col = "cornflowerblue", main = "ECG 0606")
 #' lines(x=c(discords[1,2]:(discords[1,2]+100)),
 #'    y=ecg0606[discords[1,2]:(discords[1,2]+100)], col="red")
-find_discords_brute_force <- function(ts, w_size, discords_num) {
-    .Call('_jmotif_find_discords_brute_force', PACKAGE = 'jmotif', ts, w_size, discords_num)
+find_discords_brute_force <- function(ts, w_size, discords_num, n_threshold = 0.01) {
+    .Call('_jmotif_find_discords_brute_force', PACKAGE = 'jmotif', ts, w_size, discords_num, n_threshold)
 }
 
 #' Finds the Euclidean distance between points.

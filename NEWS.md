@@ -15,6 +15,21 @@
     final break is now snapped to len, matching the saxpy / Java fractional PAA.
   NOTE: all three are behavioral changes -- SAX words for windows whose
   normalized PAA values fall near a breakpoint may differ from 1.2.x output.
+* HOT-SAX and brute-force discord discovery now measure the nearest-neighbour
+  distance on Z-NORMED windows (the SAX premise of shape similarity):
+  - find_discords_hotsax: the three internal _znorm() calls had been left
+    commented out, so distances were computed on RAW subsequences -- it reported
+    raw-amplitude outliers (e.g. ecg0606 pos 411 / 1.50) instead of true
+    z-normed shape discords (pos 430 / 5.28). The windows are now z-normed and
+    compared with an early-abandoning Euclidean distance.
+  - find_discords_brute_force now z-normalizes too and gained an `n_threshold`
+    parameter (default 0.01); previously it had no threshold and ran on raw
+    subsequences. It is again a valid z-normed reference for HOT-SAX.
+  - Both now use a deterministic lowest-index tie-break and a +/-(w-1) exclusion
+    zone, so results are reproducible and match saxpy / Java exactly
+    (ecg0606 top discords: 430/5.279, 318/4.176, 2080/2.393).
+  NOTE: behavioral change -- discord positions/distances differ from 1.2.x,
+  which reported raw-distance discords.
 
 # Version 1.2.1
 * Fixed CRAN WARN issue by removing C++ requirement from description
