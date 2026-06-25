@@ -7,8 +7,14 @@
   - SAX symbol assignment maps a value exactly on a breakpoint to the symbol
     ABOVE the cut (cuts[j] <= ts[i]), matching the jmotif Java original and
     saxpy. Previously a strict `<` mapped on-cut values to the symbol below.
-  NOTE: both are behavioral changes -- SAX words for windows whose normalized
-  PAA values fall near a breakpoint may differ from 1.2.x output.
+  - PAA: fixed a floating-point boundary bug in the fractional PAA (_paa2,
+    the public paa() / sax_by_chunking path). The final segment break
+    paa_num * (len/paa_num) can round above len in IEEE-754 (e.g. 7*(29/7) =
+    29.000000000000004), which dropped the last sample from the final segment
+    and corrupted its mean on ~5-6% of non-divisible (n, paa_num) shapes. The
+    final break is now snapped to len, matching the saxpy / Java fractional PAA.
+  NOTE: all three are behavioral changes -- SAX words for windows whose
+  normalized PAA values fall near a breakpoint may differ from 1.2.x output.
 
 # Version 1.2.1
 * Fixed CRAN WARN issue by removing C++ requirement from description
