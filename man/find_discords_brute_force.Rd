@@ -4,7 +4,7 @@
 \alias{find_discords_brute_force}
 \title{Finds a discord using brute force algorithm.}
 \usage{
-find_discords_brute_force(ts, w_size, discords_num)
+find_discords_brute_force(ts, w_size, discords_num, n_threshold = 0.01)
 }
 \arguments{
 \item{ts}{the input timeseries.}
@@ -12,6 +12,8 @@ find_discords_brute_force(ts, w_size, discords_num)
 \item{w_size}{the sliding window size.}
 
 \item{discords_num}{the number of discords to report.}
+
+\item{n_threshold}{the z-normalization threshold.}
 }
 \description{
 Finds a discord using brute force algorithm.
