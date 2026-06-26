@@ -32,14 +32,24 @@ The shared conventions are:
     variance exactly 1 (the assumption behind SAX's equiprobable breakpoints);
   * PAA uses fractional segment boundaries;
   * a value exactly on a breakpoint maps to the symbol **above** the cut;
-  * discord search compares **z-normalized** subsequences and breaks distance
-    ties by the lowest index, so results are reproducible.
+  * all distance-based discord search compares **z-normalized** subsequences —
+    HOT-SAX, brute-force, *and* RRA key on shape, not amplitude; HOT-SAX and
+    brute-force additionally break distance ties by the lowest index, so their
+    results are reproducible regardless of search order.
+
+RRA agrees with the other implementations on the discord *region* (e.g. the
+ecg0606 anomaly at position 430), but its reported nearest-neighbour distance is
+a search-order-dependent *approximation*: RRA's rarest-first search
+early-abandons as soon as a close-enough neighbour is found, so the exact
+distance value (not the position) can differ by a few percent between
+implementations whose random visit orders differ. This is inherent to the
+heuristic, not a convention gap.
 
 In 1.3.0 this changed several R outputs versus 1.2.x (z-normalization moved from
 the sample to the population standard deviation, HOT-SAX now z-normalizes its
-distances, and a PAA boundary bug was fixed), so SAX words and discord
-positions near a breakpoint may differ from earlier releases. See the version
-notes at the bottom.
+distances, RRA was switched to z-normalized distances too, and a PAA boundary
+bug was fixed), so SAX words and discord positions near a breakpoint may differ
+from earlier releases. See the version notes at the bottom.
 
 #### Citing this work:
 While RRA was proposed in [8], the code was ported in R to assist for our newer development in SAX parameters optimization: [Grammarviz 3.0](https://dl.acm.org/citation.cfm?id=3051126), please cite it: Senin, P., Lin, J., Wang, X., Oates, T., Gandhi, S., Boedihardjo, A.P., Chen, C., Frankenstein, S.,  [*GrammarViz 3.0: Interactive Discovery of Variable-Length Time Series Patterns*](https://github.com/csdl/techreports/blob/master/techreports/2017/17-04/17-04.pdf), ACM Trans. Knowl. Discov. Data, February 2018. [[Click here for Citation BibTeX]](https://raw.githubusercontent.com/jMotif/SAX/master/citation.bib)
