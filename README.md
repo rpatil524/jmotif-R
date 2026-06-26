@@ -19,6 +19,28 @@
 
 #### Most of this functionality is also implemented in [Java](https://github.com/jMotif/SAX) and some in [Python](https://github.com/seninp/saxpy) as well...
 
+#### Cross-implementation alignment
+
+As of 1.3.0 the R/C++, Python ([saxpy](https://github.com/seninp/saxpy)), and
+Java implementations are kept aligned: the SAX stack (z-normalization, PAA,
+Gaussian breakpoints, symbol assignment) and the HOT-SAX / brute-force discord
+search produce the same results across all three to floating-point precision.
+The shared conventions are:
+
+  * z-normalization uses the **population** standard deviation (divide by `n`),
+    matching the Matrix Profile / MASS convention, so each window has empirical
+    variance exactly 1 (the assumption behind SAX's equiprobable breakpoints);
+  * PAA uses fractional segment boundaries;
+  * a value exactly on a breakpoint maps to the symbol **above** the cut;
+  * discord search compares **z-normalized** subsequences and breaks distance
+    ties by the lowest index, so results are reproducible.
+
+In 1.3.0 this changed several R outputs versus 1.2.x (z-normalization moved from
+the sample to the population standard deviation, HOT-SAX now z-normalizes its
+distances, and a PAA boundary bug was fixed), so SAX words and discord
+positions near a breakpoint may differ from earlier releases. See the version
+notes at the bottom.
+
 #### Citing this work:
 While RRA was proposed in [8], the code was ported in R to assist for our newer development in SAX parameters optimization: [Grammarviz 3.0](https://dl.acm.org/citation.cfm?id=3051126), please cite it: Senin, P., Lin, J., Wang, X., Oates, T., Gandhi, S., Boedihardjo, A.P., Chen, C., Frankenstein, S.,  [*GrammarViz 3.0: Interactive Discovery of Variable-Length Time Series Patterns*](https://github.com/csdl/techreports/blob/master/techreports/2017/17-04/17-04.pdf), ACM Trans. Knowl. Discov. Data, February 2018. [[Click here for Citation BibTeX]](https://raw.githubusercontent.com/jMotif/SAX/master/citation.bib)
 
