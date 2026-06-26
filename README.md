@@ -561,6 +561,18 @@ produces a list of data frames, each of which contains the RePair grammar rule i
      $ rule_interval_starts: num [1:2] 6 0
      $ rule_interval_ends  : num [1:2] 7 1
 
+RePair is **lossless** and the inferred grammar is structurally equivalent across
+the R, Python, and Java implementations: decompressing R0 always reproduces the
+input, and R0 ends up with no repeated digram. RePair repeatedly replaces the
+*most frequent* digram with a new rule; when several digrams share the maximal
+frequency, *which one is replaced first* is an implementation detail (the C++/R
+port follows `unordered_map` iteration order, saxpy follows Python dict insertion
+order, Java uses its priority queue). On tie-heavy inputs this can change the
+**rule numbering** and which equal-frequency pair is factored -- so rule ids and
+even the rule count may differ slightly between implementations -- but the
+compression is correct in all of them and the set of rules is determined by the
+input. Treat `rule_name` as implementation-local, not a cross-language identifier.
+
 #### 8.0 Rule density curve
 As we have discussed in our work, SAX opens door for many high-level string algorithms application to the problem of patterns mining in time series. Specifically in [[8](https://csdl.ics.hawaii.edu/techreports/2014/14-05/14-05.pdf)], we have shown useful properties of grammatical compression (i.e., algorithmic complexity) when applied to the problem of recurrent and anomalous pattern discovery.
 
