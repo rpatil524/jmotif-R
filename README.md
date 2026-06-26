@@ -649,6 +649,18 @@ RRA (i.e., Rare Rule Anomaly) algorithm extends the HOT-SAX algorithm leveraging
 
 Since each of the grammar rules consists of terminal and non-terminal tokens, the subsequences corresponding to rules naturally vary in length. Moreover, due to the compression properties of the utilized grammatical inference algorithm, which operates on digrams (i.e. pairs of subsequences extracted via sliding window), the amount of input subsequences for RAA is usually significantly lower than those extracted via sliding window for HOT-SAX, which improves the efficiency of HOT-SAX inner and outer loops by reducing the number of calls to the distance function. 
 
-In addition to the above, RRA uses a different heuristics for the ordering in the HOT-SAX outer loop: instead of ordering subsequences by their occurrence frequency, the rule-corresponding subsequences are ordered according to the "rule coverage" values discussed above -- a value which reflects the compressibility of the subsequence. Naturally, we expect that incompressible subsequences correspond to potential anomalies.    
+In addition to the above, RRA uses a different heuristics for the ordering in the HOT-SAX outer loop: instead of ordering subsequences by their occurrence frequency, the rule-corresponding subsequences are ordered according to the "rule coverage" values discussed above -- a value which reflects the compressibility of the subsequence. Naturally, we expect that incompressible subsequences correspond to potential anomalies.
+
+    discords <- find_discords_rra(ecg0606, 100, 4, 4, "none", 0.01, 4)
+
+As of 1.3.0 RRA computes its distances between **z-normalized** subsequences
+(keying on shape, like HOT-SAX and the canonical jMotif GrammarViz RRA), so on
+ecg0606 it reports the same primary anomaly region (~position 430) as HOT-SAX
+and the saxpy/Java implementations. The reported nearest-neighbour distance is,
+however, a search-order-dependent *approximation*: RRA's rule-coverage-ordered
+search early-abandons as soon as a close-enough neighbour is found, so the exact
+distance value (not the discord position) can differ by a few percent between
+implementations whose visit orders differ. This is inherent to the heuristic --
+exactness of the distance is not guaranteed -- not a cross-implementation defect.
 
 
