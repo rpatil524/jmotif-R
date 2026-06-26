@@ -21,49 +21,43 @@ struct sort_intervals {
   }
 };
 
-double _normalized_distance(int start1, int end1, int start2, int end2, std::vector<double> *series){
+// Per-point normalized Euclidean distance between two subsequences.
+//
+// Both subsequences are Z-NORMALIZED before the distance is taken, so the
+// comparison is of shape, not amplitude/offset -- matching the HOT-SAX and
+// brute-force discord routines (hot-sax.cpp / discord.cpp both _znorm their
+// windows) and the canonical jMotif GrammarViz RRA. When the spans differ in
+// length, the longer is first PAA-reduced (_paa2) to the shorter length. The
+// result is euclidean(znorm(a), znorm(b)) / count, divided by the number of
+// compared points so spans of different lengths stay comparable.
+double _normalized_distance(int start1, int end1, int start2, int end2,
+                            std::vector<double> *series, double n_threshold){
 
   double res = 0;
-  int count = 0;
   int len1 = end1 - start1;
   int len2 = end2 - start2;
+  int count = std::min(len1, len2);
 
+  std::vector<double> a, b;
   if(len1 == len2){
-    for(int i=0; i<len1; i++){
-      res = res + (series->at(start1+i) - series->at(start2+i)) *
-                        (series->at(start1+i) - series->at(start2+i));
-      count++;
-    }
-    return sqrt(res) / (double) count;
-  }
-
-  int min_length = std::min(len1, len2);
-  if(len1 == min_length){
-    std::vector<double> subseries(len2);
-    for(int i=0; i<len2; i++){
-      subseries[i] = series->at(start2+i);
-    }
-    std::vector<double> subseries_paa = _paa2(subseries, len1);
-    for(int i=0; i<len1; i++){
-      res = res + (series->at(start1+i) - subseries_paa[i]) *
-        (series->at(start1+i) - subseries_paa[i]);
-      count++;
-    }
-    return sqrt(res) / (double) count;
-
+    a.assign(series->begin() + start1, series->begin() + end1);
+    b.assign(series->begin() + start2, series->begin() + end2);
+  } else if(len1 < len2){
+    a.assign(series->begin() + start1, series->begin() + end1);
+    std::vector<double> longer(series->begin() + start2, series->begin() + end2);
+    b = _paa2(longer, len1);
   } else {
-    std::vector<double> subseries(len1);
-    for(int i=0; i<len1; i++){
-      subseries[i] = series->at(start1+i);
-    }
-    std::vector<double> subseries_paa = _paa2(subseries, len2);
-    for(int i=0; i<len2; i++){
-      res = res + (subseries_paa[i] - series->at(start2+i)) *
-        (subseries_paa[i] - series->at(start2+i));
-      count++;
-    }
-    return sqrt(res) / (double) count;
+    b.assign(series->begin() + start2, series->begin() + end2);
+    std::vector<double> longer(series->begin() + start1, series->begin() + end1);
+    a = _paa2(longer, len2);
   }
+
+  std::vector<double> za = _znorm(a, n_threshold);
+  std::vector<double> zb = _znorm(b, n_threshold);
+  for(int i=0; i<count; i++){
+    res = res + (za[i] - zb[i]) * (za[i] - zb[i]);
+  }
+  return sqrt(res) / (double) count;
 }
 
 double _shrinked_distance(int start1, int end1, int start2, int end2, std::vector<double> *series){
@@ -102,7 +96,7 @@ double _mean(std::vector<int> *ts, int *start, int *end){
 rra_discord_record find_best_rra_discord(std::vector<double> *ts, int w_size,
       std::unordered_map<int, rule_record*> *grammar, std::vector<int> *indexes,
       std::vector<rule_interval> *intervals,
-      std::unordered_set<int> *global_visited_positions){
+      std::unordered_set<int> *global_visited_positions, double n_threshold){
 
   // *****
   // std::chrono::time_point<std::chrono::system_clock> tstart0, tstart, tend;
@@ -178,7 +172,7 @@ rra_discord_record find_best_rra_discord(std::vector<double> *ts, int w_size,
          // end << std::endl;
         distance_calls_counter++;
         double dist = _normalized_distance(c_interval.start, c_interval.end,
-                                          start, end, ts);
+                                          start, end, ts, n_threshold);
         // keep track of best so far distance
         if (dist < nn_distance) {
           // Rcout << "    better nn distance found " << dist << std::endl;
@@ -252,7 +246,7 @@ rra_discord_record find_best_rra_discord(std::vector<double> *ts, int w_size,
         distance_calls_counter++;
         double dist = _normalized_distance(
           c_interval.start, c_interval.end,
-          randomInterval.start, randomInterval.end, ts
+          randomInterval.start, randomInterval.end, ts, n_threshold
         );
 
         if (dist < bestSoFarDistance) {
@@ -507,7 +501,7 @@ Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size
     // tstart = std::chrono::system_clock::now();
 
     rra_discord_record d = find_best_rra_discord(&ts, w_size, &grammar,
-                              &indexes, &intervals, &global_visited_positions);
+                              &indexes, &intervals, &global_visited_positions, n_threshold);
     // Rcout << d.nn_distance;
 
     if(d.nn_distance<0){
