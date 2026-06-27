@@ -310,6 +310,7 @@ rra_discord_record find_best_rra_discord(std::vector<double> *ts, int w_size,
   res.start = bestSoFarPosition;
   res.end = bestSoFarPosition + bestSoFarLength;
   res.nn_distance = bestSoFarDistance;
+  res.distance_calls = distance_calls_counter;
 
   return res;
 }
@@ -539,6 +540,7 @@ Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size
   std::vector<int> ends;
   std::vector<int> lengths;
   std::vector<double > nn_distances;
+  std::vector<int> distance_calls;
 
 
   for(auto it = discords.begin(); it != discords.end(); it++) {
@@ -547,6 +549,7 @@ Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size
     ends.push_back(it->end);
     lengths.push_back(it->end - it->start);
     nn_distances.push_back(it->nn_distance);
+    distance_calls.push_back(it->distance_calls);
   }
 
   // make results
@@ -555,7 +558,8 @@ Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size
     Named("start") = starts,
     Named("end") = ends,
     Named("length") = lengths,
-    Named("nn_distance") = nn_distances
+    Named("nn_distance") = nn_distances,
+    Named("distance_calls") = distance_calls
   );
 
 }

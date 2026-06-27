@@ -244,6 +244,7 @@ struct rra_discord_record {
   int start;
   int end;
   double nn_distance;
+  int distance_calls;
 };
 
 std::unordered_map<int, rule_record*> _str_to_repair_grammar(std::string s);
