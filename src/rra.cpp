@@ -5,6 +5,7 @@
 #include <ctime>
 #include <vector>
 #include <random>
+#include <algorithm> // std::stable_sort
 
 
 class rule_interval {
@@ -424,7 +425,12 @@ Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size
       rr.rule_id = it->first;
       rr.start = start;
       rr.end = end;
-      // rr.cover = it->second->rule_use; // a shortcut
+      // Sort key set at construction (mirrors GrammarViz Java
+      // RuleInterval.setCoverage(rule.getRuleIntervals().size()),
+      // GrammarVizAnomaly.java:740): RULE FREQUENCY -- the number of
+      // occurrences of this interval's grammar rule, NOT per-point coverage.
+      // A rule seen once is, by construction, the most anomalous pattern.
+      rr.cover = (double) (it->second)->rule_intervals.size();
       intervals.push_back(rr);
     }
   }
@@ -448,15 +454,26 @@ Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size
       need_placement = true;
 
       rule_interval ri;
-      ri.cover=0;
+      // Zero-coverage stretch: no grammar rule covers it. cover = 0 makes these
+      // sort FIRST (rarest-first) -- an uncovered span is maximally anomalous.
+      // This matches the authoritative Java GrammarViz exactly: getZeroIntervals
+      // builds them as `new RuleInterval(id, start, i, 0)` (coverage == 0,
+      // GrammarVizAnomaly.java:933). NOTE this INTENTIONALLY diverges from the
+      // saxpy port and from this file's previous post-pass, which both ranked
+      // zero spans by their OWN occurrence count (len(zero_rule.intervals));
+      // cover = 0 pushes them ahead of every count>=1 rule instead.
+      ri.cover = 0;
       ri.start = start;
       ri.end=i;
       ri.rule_id=-1;
-      intervals.push_back(ri);
 
       rec_zero_cover->rule_occurrences.push_back(start);
       rec_zero_cover->rule_intervals.push_back(std::make_pair(start, i));
 
+      // NOTE: this interval was previously push_back'd TWICE (once before and
+      // once after the rec_zero_cover bookkeeping), duplicating every
+      // zero-coverage candidate in the search list -- inflating the candidate
+      // set and wasting distance calls on an identical interval. Insert once.
       intervals.push_back(ri);
 
       in_interval = false;
@@ -468,13 +485,43 @@ Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size
     grammar.emplace(std::make_pair(-1, rec_zero_cover));
   }
 
-  // compute the coverage
-  for(auto it=intervals.begin(); it !=intervals.end(); ++it){
-    it->cover = _mean(&coverage_array, &it->start, &it->end);
-  }
+  // Rank the candidate intervals "rarest first" so the early-abandoning NN
+  // search builds a strong best-so-far distance quickly.
+  //
+  // Sort key: RULE FREQUENCY -- the number of occurrences of the interval's
+  // grammar rule (a rule seen once is, by construction, the most anomalous
+  // pattern). This matches the canonical jMotif GrammarViz (Java) RRA and the
+  // saxpy port. We reuse the `cover` field (and the existing sort_intervals
+  // comparator, left.cover < right.cover) to carry the frequency, so a small
+  // count sorts first. The frequency is now set on each interval at
+  // construction time (see the build loop above and the zero-coverage block),
+  // so no separate pass is needed here -- the comparator just reads the
+  // pre-set field, exactly as the Java reference does
+  // (RRAImplementation.findBestDiscordForIntervals sorts on getCoverage()).
+  //
+  // NOTE -- alternative ordering: MEAN PER-POINT COVERAGE (how many rules
+  // overlap each point of the span), jmotif-R's historical key. It is a local
+  // density measure rather than a pattern-rarity one, and the two are nearly
+  // uncorrelated. To use coverage instead, set cover from the coverage curve
+  // with a pass like:
+  //     for(auto it=intervals.begin(); it!=intervals.end(); ++it)
+  //         it->cover = _mean(&coverage_array, &it->start, &it->end);
+  //
+  // Tie handling: the key is a small INTEGER frequency, so large tie-groups
+  // form (all freq-1 rules, all freq-2 rules, ...). We use std::STABLE_sort to
+  // match the two reference impls -- Java's Collections.sort (stable TimSort,
+  // single Double.compare key, NO secondary key) and saxpy's list.sort (also
+  // stable). stable_sort preserves construction order within a tie-group and
+  // removes the run-to-run / STL-version reordering that the previous std::sort
+  // could introduce. Note FULL byte-for-byte tie order still cannot match Java:
+  // the construction order itself differs because `grammar` is a
+  // std::unordered_map (implementation-defined iteration order) whereas Java
+  // iterates rules in deterministic id order. We deliberately keep the single
+  // frequency key with no secondary tie-break, mirroring all three sibling
+  // implementations rather than inventing one here.
 
-  // sort the intervals rare < frequent
-  std::sort(intervals.begin(), intervals.end(), sort_intervals());
+  // sort the intervals rare < frequent (stable: preserve construction order on ties)
+  std::stable_sort(intervals.begin(), intervals.end(), sort_intervals());
 
 
   // ******
