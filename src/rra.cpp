@@ -5,7 +5,7 @@
 #include <ctime>
 #include <vector>
 #include <random>
-#include <algorithm> // std::stable_sort
+#include <algorithm> // std::stable_sort, std::max
 
 
 class rule_interval {
@@ -444,6 +444,50 @@ Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size
   bool need_placement = false;
   int start = -1;
   bool in_interval = false;
+
+  // Fix-1 (cross-impl port from the saxpy sibling, commit 822503b): SKIP
+  // DEGENERATE zero-coverage runs shorter than a single PAA segment.
+  //
+  // WHAT: only emit a synthetic rule_id == -1 candidate when the uncovered
+  // stretch is at least min_uncovered = max(2, paa_size) points long. A run of
+  // length 1 (or any sub-paa_size span) is shorter than one PAA segment, so it
+  // is not a discoverable variable-length subsequence -- there is nothing for
+  // the RRA NN search to legitimately rank as a discord there. A common trigger
+  // is position 0 when RePair leaves the first SAX word as a bare terminal in
+  // R0, leaving a single uncovered point.
+  //
+  // WHY: (a) sub-PAA-segment non-discoverability (above), and (b) cross-impl
+  // CONSISTENCY with the saxpy port, which already skips these (saxpy/rra.py,
+  // min_uncovered = max(2, paa_size)). In saxpy the run is also numerically
+  // pathological: _fast_znorm mean-centers a length-1 span to [0.0], making its
+  // distance 0 to *everything*, which both fabricates a spurious nn=0 "discord"
+  // and poisons the early-abandon best-so-far, inflating distance calls ~20x
+  // (ECG308 100,4,4: saxpy 479,346 calls with the fix). This C++ port does NOT
+  // share that catastrophe: _znorm (znorm.cpp) returns the RAW UNCENTERED clone
+  // when stdev < threshold, so a length-1 span yields a NONZERO distance, not 0.
+  // On the ECG308 100,4,4 row we benchmarked the degenerate span was NOT the
+  // winning discord -- but it CAN win on other rows: an A/B build comparison
+  // found the C++ original (no Fix-1) reporting rule_id == -1, [0,1) (length 1)
+  // as its #1 discord at ecg 100,1,2 and at a seed-99 random walk 100,4,4
+  // (nonzero nn ~0.22, non-catastrophic but still a meaningless 1-point span).
+  // So Fix-1 does change the result on those rows -- in the INTENDED direction,
+  // removing the meaningless top "discord" and surfacing the real ones. Where it
+  // was not already winning, this just removes a meaningless extra candidate; in
+  // neither case is it fixing a poisoned search. The perf delta is therefore
+  // expected to be modest (possibly neutral on rows with no short run) and is to
+  // be MEASURED, not assumed.
+  //
+  // This DELIBERATELY DIVERGES from the authoritative Java GrammarViz
+  // (GrammarVizAnomaly.getZeroIntervals, lines 922-939), which keeps EVERY zero
+  // run including length 1 (`new RuleInterval(id, start, i, 0)` with no length
+  // guard). The divergence is justified by the two points above; the per-point
+  // behavior is otherwise identical to Java (cover = 0 still sorts these first).
+  //
+  // Signedness: the loop counter i is unsigned and start is int, so compute the
+  // run length as a signed int (run_len = (int)i - start) before comparing, to
+  // avoid an unsigned-promotion comparison.
+  int min_uncovered = std::max(2, paa_size);
+
   for (unsigned i = 0; i < coverage_array.size(); i++) {
     if (0 == coverage_array[i] && !in_interval) {
       start = i;
@@ -451,38 +495,52 @@ Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size
     }
     if (coverage_array[i] > 0 && in_interval) {
 
-      need_placement = true;
+      int run_len = (int) i - start;
+      if (run_len >= min_uncovered) {
 
-      rule_interval ri;
-      // Zero-coverage stretch: no grammar rule covers it. cover = 0 makes these
-      // sort FIRST (rarest-first) -- an uncovered span is maximally anomalous.
-      // This matches the authoritative Java GrammarViz exactly: getZeroIntervals
-      // builds them as `new RuleInterval(id, start, i, 0)` (coverage == 0,
-      // GrammarVizAnomaly.java:933). NOTE this INTENTIONALLY diverges from the
-      // saxpy port and from this file's previous post-pass, which both ranked
-      // zero spans by their OWN occurrence count (len(zero_rule.intervals));
-      // cover = 0 pushes them ahead of every count>=1 rule instead.
-      ri.cover = 0;
-      ri.start = start;
-      ri.end=i;
-      ri.rule_id=-1;
+        need_placement = true;
 
-      rec_zero_cover->rule_occurrences.push_back(start);
-      rec_zero_cover->rule_intervals.push_back(std::make_pair(start, i));
+        rule_interval ri;
+        // Zero-coverage stretch: no grammar rule covers it. cover = 0 makes these
+        // sort FIRST (rarest-first) -- an uncovered span is maximally anomalous.
+        // This matches the authoritative Java GrammarViz exactly: getZeroIntervals
+        // builds them as `new RuleInterval(id, start, i, 0)` (coverage == 0,
+        // GrammarVizAnomaly.java:933). NOTE this INTENTIONALLY diverges from the
+        // saxpy port and from this file's previous post-pass, which both ranked
+        // zero spans by their OWN occurrence count (len(zero_rule.intervals));
+        // cover = 0 pushes them ahead of every count>=1 rule instead.
+        ri.cover = 0;
+        ri.start = start;
+        ri.end=i;
+        ri.rule_id=-1;
 
-      // NOTE: this interval was previously push_back'd TWICE (once before and
-      // once after the rec_zero_cover bookkeeping), duplicating every
-      // zero-coverage candidate in the search list -- inflating the candidate
-      // set and wasting distance calls on an identical interval. Insert once.
-      intervals.push_back(ri);
+        rec_zero_cover->rule_occurrences.push_back(start);
+        rec_zero_cover->rule_intervals.push_back(std::make_pair(start, i));
 
+        // NOTE: this interval was previously push_back'd TWICE (once before and
+        // once after the rec_zero_cover bookkeeping), duplicating every
+        // zero-coverage candidate in the search list -- inflating the candidate
+        // set and wasting distance calls on an identical interval. Insert once.
+        intervals.push_back(ri);
+
+        // Rcout << " zero coverage from " << start << " to " << i << std::endl;
+      }
+
+      // The run always closes when coverage turns positive, whether or not it
+      // qualified above -- mirrors saxpy, where `in_interval = False` sits
+      // OUTSIDE the `if i - start >= min_uncovered:` length guard.
       in_interval = false;
-      // Rcout << " zero coverage from " << start << " to " << i << std::endl;
     }
   }
 
   if(need_placement) {
     grammar.emplace(std::make_pair(-1, rec_zero_cover));
+  } else {
+    // Fix-1 makes the "no zero run survived the guard" path reachable for the
+    // first time (previously every closed run set need_placement = true and
+    // rec_zero_cover was always emplaced into `grammar`). Free the unused
+    // heap-allocated record here so the new path does not leak it.
+    delete rec_zero_cover;
   }
 
   // Rank the candidate intervals "rarest first" so the early-abandoning NN
