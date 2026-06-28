@@ -200,26 +200,33 @@ public:
 };
 
 //
-// the priority queue taking care about repair digrams ordering
+// the priority queue taking care about repair digrams ordering.
+//
+// Bucketed (count-indexed) design (Larsson-Moffat): buckets[f] heads a doubly-linked
+// list of every digram whose frequency is exactly f; max_count tracks the highest
+// non-empty bucket. Max-select (dequeue) is an O(1) array index + downward scan past
+// empties; every +/-1 frequency change is an O(1) unlink + push-front. This replaces
+// the previous frequency-sorted single linked list whose enqueue / update did O(Q)
+// linear band-walks. The `nodes` map (digram -> node) is retained for O(1) locate.
+//
+// Order discipline (preserves rule numbering): push-FRONT within a bucket reproduces
+// the previous list's LIFO-within-band order exactly for the seed pass (pure enqueues),
+// so the dequeue order -- hence rule-id assignment -- is unchanged.
 //
 class repair_priority_queue {
 public:
-  repair_pqueue_node* queue_head; // queue head pointer
-  std::unordered_map<std::string, repair_pqueue_node*> nodes; // the fastmap <digram> -> <node>
+  std::vector<repair_pqueue_node*> buckets; // buckets[freq] -> head of that freq's list
+  int max_count;                            // highest non-empty bucket index
+  std::unordered_map<std::string, repair_pqueue_node*> nodes; // fastmap <digram> -> <node>
   repair_priority_queue() {
-    queue_head = nullptr;
-    std::unordered_map<std::string, repair_pqueue_node*> nodes;
+    max_count = 0;
   }
   repair_digram* enqueue(repair_digram* digram);
   repair_digram* dequeue();
-  repair_digram* peek();
-  repair_digram* get(std::string *digram_string);
   repair_digram* update_digram_frequency(std::string *digram_string, int new_value);
   bool contains_digram(std::string *digram_string);
-  std::vector<repair_digram> to_array();
   void remove_node(repair_pqueue_node* node);
   std::string to_string();
-  bool consistency_check();
 };
 
 //
