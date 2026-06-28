@@ -4,13 +4,13 @@
 // "registry" of the position which are to be tested
 discord_record find_best_discord_brute_force(const NumericVector& series, int w_size,
                                              std::vector<std::vector<double>>* znorms,
-                                             VisitRegistry* globalRegistry) {
+                                             VisitRegistry* globalRegistry, int seed = -1) {
 
   double best_so_far_distance = -1.0;
   int best_so_far_index = -1;
   unsigned int dist_calls = 0;
 
-  VisitRegistry outerRegistry(series.size() - w_size);
+  VisitRegistry outerRegistry(series.size() - w_size, seed);
   int outer_idx = outerRegistry.getNextUnvisited();
 
   while(!(-1==outer_idx)){ // while there is a position to try
@@ -26,7 +26,7 @@ discord_record find_best_discord_brute_force(const NumericVector& series, int w_
     std::vector<double>* candidate_seq = &(znorms->at(outer_idx));
 
     double nnDistance = std::numeric_limits<double>::max();
-    VisitRegistry innerRegistry(series.size() - w_size);
+    VisitRegistry innerRegistry(series.size() - w_size, seed);
 
     int inner_idx = innerRegistry.getNextUnvisited();
     while(!(-1==inner_idx)){
@@ -69,6 +69,10 @@ discord_record find_best_discord_brute_force(const NumericVector& series, int w_
 //' @param w_size the sliding window size.
 //' @param discords_num the number of discords to report.
 //' @param n_threshold the z-normalization threshold.
+//' @param seed the random seed for the candidate visit order; a negative value
+//' (the default) leaves it non-reproducible, a non-negative value makes the
+//' search trajectory (and its distance-call count) reproducible. The reported
+//' discords are identical either way.
 //' @useDynLib jmotif
 //' @export
 //' @references Keogh, E., Lin, J., Fu, A.,
@@ -81,7 +85,8 @@ discord_record find_best_discord_brute_force(const NumericVector& series, int w_
 //'    y=ecg0606[discords[1,2]:(discords[1,2]+100)], col="red")
 // [[Rcpp::export]]
 Rcpp::DataFrame find_discords_brute_force(
-    NumericVector ts, int w_size, int discords_num, double n_threshold = 0.01) {
+    NumericVector ts, int w_size, int discords_num, double n_threshold = 0.01,
+    int seed = -1) {
 
   std::vector<int> positions;
   std::vector<unsigned int> distance_calls;
@@ -96,13 +101,13 @@ Rcpp::DataFrame find_discords_brute_force(
     znorms[i] = _znorm(sub, n_threshold);
   }
 
-  VisitRegistry registry(ts.length());
+  VisitRegistry registry(ts.length(), seed);
   registry.markVisited(ts.length() - w_size, ts.length());
 
   int discord_counter = 0;
   while(discord_counter < discords_num){
 
-    discord_record rec = find_best_discord_brute_force(ts, w_size, &znorms, &registry);
+    discord_record rec = find_best_discord_brute_force(ts, w_size, &znorms, &registry, seed);
 
     if(rec.nn_distance == 0 || rec.index == -1){ break; }
 

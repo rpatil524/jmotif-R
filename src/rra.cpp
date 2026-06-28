@@ -97,7 +97,8 @@ double _mean(std::vector<int> *ts, int *start, int *end){
 rra_discord_record find_best_rra_discord(std::vector<double> *ts, int w_size,
       std::unordered_map<int, rule_record*> *grammar, std::vector<int> *indexes,
       std::vector<rule_interval> *intervals,
-      std::unordered_set<int> *global_visited_positions, double n_threshold){
+      std::unordered_set<int> *global_visited_positions, double n_threshold,
+      int seed = -1){
 
   // *****
   // std::chrono::time_point<std::chrono::system_clock> tstart0, tstart, tend;
@@ -223,7 +224,14 @@ rra_discord_record find_best_rra_discord(std::vector<double> *ts, int w_size,
       // shuffle the visit array
       // only shuffle the filled portion of visit_array
       if (cIndex >= 0) {
-        auto rng = std::default_random_engine {};
+        // seed < 0 keeps the historical default-constructed engine (a fixed
+        // default seed -- deterministic but not caller-controllable); seed >= 0
+        // makes the phase-2 visit order caller-reproducible. Either way the
+        // discord result is order-independent; only the distance-call count and
+        // search trajectory depend on the order.
+        std::default_random_engine rng = (seed < 0)
+            ? std::default_random_engine{}
+            : std::default_random_engine{(unsigned) seed};
         // std::shuffle(std::begin(visit_array), std::end(visit_array), rng); # old bad code, throws us into -1 zone
         std::shuffle(visit_array.begin(), visit_array.begin() + cIndex + 1, rng);
       }
@@ -327,6 +335,12 @@ rra_discord_record find_best_rra_discord(std::vector<double> *ts, int w_size,
 //' @param nr_strategy the numerosity reduction strategy ("none", "exact", "mindist").
 //' @param n_threshold the normalization threshold.
 //' @param discords_num the number of discords to report.
+//' @param seed the random seed for the phase-2 search-order shuffle. The default
+//' (a negative value) keeps the historical fixed-default engine, which is itself
+//' deterministic but not caller-controllable; a non-negative value lets the
+//' caller choose the shuffle, so a different reproducible search trajectory (and
+//' distance-call count) can be obtained. The reported discords are identical
+//' either way -- only the search trajectory depends on it.
 //' @useDynLib jmotif
 //' @export
 //' @references Senin Pavel and Malinchik Sergey,
@@ -339,8 +353,8 @@ rra_discord_record find_best_rra_discord(std::vector<double> *ts, int w_size,
 //'    y=ecg0606[discords[1,2]:(discords[1,2]+100)], col="red")
 // [[Rcpp::export]]
 Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size,
-  int a_size, CharacterVector nr_strategy, double n_threshold,
-  int discords_num){
+  int a_size, CharacterVector nr_strategy, double n_threshold = 0.01,
+  int discords_num = 3, int seed = -1){
 
   // *****
   // std::chrono::time_point<std::chrono::system_clock> tstart0, tstart, tend;
@@ -607,7 +621,7 @@ Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size
     // tstart = std::chrono::system_clock::now();
 
     rra_discord_record d = find_best_rra_discord(&ts, w_size, &grammar,
-                              &indexes, &intervals, &global_visited_positions, n_threshold);
+                              &indexes, &intervals, &global_visited_positions, n_threshold, seed);
     // Rcout << d.nn_distance;
 
     if(d.nn_distance<0){

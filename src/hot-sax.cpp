@@ -3,7 +3,8 @@
 
 discord_record find_best_discord_hotsax(std::vector<double>* ts, int w_size, double n_threshold,
           std::unordered_map<std::string, std::vector<int>>* word2indexes,
-          std::multimap<int, std::string>* ordered_words, VisitRegistry* globalRegistry) {
+          std::multimap<int, std::string>* ordered_words, VisitRegistry* globalRegistry,
+          int seed = -1) {
 
   unsigned int distance_calls = 0;
 
@@ -11,7 +12,7 @@ discord_record find_best_discord_hotsax(std::vector<double>* ts, int w_size, dou
   int best_so_far_index = -1;
   std::string best_so_far_word = "";
 
-  VisitRegistry outerRegistry(ts->size() - w_size);
+  VisitRegistry outerRegistry(ts->size() - w_size, seed);
 
   // outer heuristics with the magic array
   for(std::multimap<int, std::string>::iterator it = ordered_words->begin();
@@ -33,7 +34,7 @@ discord_record find_best_discord_hotsax(std::vector<double>* ts, int w_size, dou
       std::vector<double> candidate_subseq(first, last);
       std::vector<double> candidate_seq = _znorm(candidate_subseq, n_threshold);
 
-      VisitRegistry innerRegistry(ts->size() - w_size);
+      VisitRegistry innerRegistry(ts->size() - w_size, seed);
       bool doRandomSearch = true;
       double nnDistance = std::numeric_limits<double>::max();
 
@@ -140,6 +141,10 @@ discord_record find_best_discord_hotsax(std::vector<double>* ts, int w_size, dou
 //' @param a_size the alphabet size.
 //' @param n_threshold the normalization threshold.
 //' @param discords_num the number of discords to report.
+//' @param seed the random seed for the random-search visit order; a negative
+//' value (the default) leaves it non-reproducible, a non-negative value makes
+//' the search trajectory (and its distance-call count) reproducible. The
+//' reported discords are identical either way.
 //' @useDynLib jmotif
 //' @export
 //' @references Keogh, E., Lin, J., Fu, A.,
@@ -152,7 +157,8 @@ discord_record find_best_discord_hotsax(std::vector<double>* ts, int w_size, dou
 //'    y=ecg0606[discords[1,2]:(discords[1,2]+100)], col="red")
 // [[Rcpp::export]]
 Rcpp::DataFrame find_discords_hotsax(NumericVector ts, int w_size, int paa_size,
-                                      int a_size, double n_threshold, int discords_num) {
+                                      int a_size, double n_threshold, int discords_num,
+                                      int seed = -1) {
 
   std::vector<double> series = Rcpp::as< std::vector<double> > (ts);
 
@@ -197,7 +203,7 @@ Rcpp::DataFrame find_discords_hotsax(NumericVector ts, int w_size, int paa_size,
   std::vector<double > distances;
 
 
-  VisitRegistry registry(series.size());
+  VisitRegistry registry(series.size(), seed);
   registry.markVisited(series.size()- w_size, series.size());
 
   // Rcout << "starting search of " << discords_num << " discords..." << "\n";
@@ -206,7 +212,7 @@ Rcpp::DataFrame find_discords_hotsax(NumericVector ts, int w_size, int paa_size,
   while(discord_counter < discords_num){
 
     discord_record rec = find_best_discord_hotsax(&series,
-                            w_size, n_threshold, &word2indexes, &ordered_words, &registry);
+                            w_size, n_threshold, &word2indexes, &ordered_words, &registry, seed);
 
     if(rec.nn_distance == 0 || rec.index == -1){ break; }
 

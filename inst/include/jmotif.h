@@ -83,7 +83,7 @@ public:
   std::vector<bool> registry;
   std::vector<int> indexes;
   int unvisited_count;
-  VisitRegistry( int capacity );
+  VisitRegistry( int capacity, int seed = -1 );
   int getNextUnvisited();
   void markVisited(int idx);
   void markVisited(int start, int end);
@@ -92,14 +92,15 @@ public:
 };
 //
 Rcpp::DataFrame find_discords_brute_force(NumericVector ts, int w_size, int discords_num,
-                                          double n_threshold);
+                                          double n_threshold, int seed);
 //
 
 //
 // HOT-SAX
 //
 Rcpp::DataFrame find_discords_hotsax(NumericVector ts, int w_size, int paa_size,
-                                      int a_size, double n_threshold, int discords_num);
+                                      int a_size, double n_threshold, int discords_num,
+                                      int seed);
 
 //
 // REPAIR
@@ -251,7 +252,8 @@ std::unordered_map<int, rule_record*> _str_to_repair_grammar(std::string s);
 Rcpp::List str_to_repair_grammar(CharacterVector str);
 
 Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size,
-  int a_size, CharacterVector nr_strategy, double n_threshold = 0.01, int discords_num = 3);
+  int a_size, CharacterVector nr_strategy, double n_threshold, int discords_num,
+  int seed);
 
 //
 // Utilities
