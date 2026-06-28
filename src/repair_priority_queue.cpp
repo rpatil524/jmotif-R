@@ -44,7 +44,9 @@ repair_digram* repair_priority_queue::enqueue(repair_digram* digram) {
     return nullptr;
   }
 
-  repair_pqueue_node* nn = new repair_pqueue_node(digram);
+  // allocate the node from the arena when one is attached, else fall back to new
+  repair_pqueue_node* nn = (nullptr != pool) ? pool->new_node(digram)
+                                             : new repair_pqueue_node(digram);
 
   int f = digram->freq;
   ensure_capacity(buckets, f);

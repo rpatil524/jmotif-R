@@ -3,6 +3,7 @@
 //
 //#include <RcppArmadillo.h>
 #include <vector>
+#include <deque>
 #include <random>
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -200,6 +201,53 @@ public:
 };
 
 //
+// Arena/object pool for the RePair working objects.
+//
+// Every symbol/record/guard/rule/digram/pqueue-node the grammar inference allocates was
+// previously `new`'d and NEVER freed -- a leak that is benign for a single one-shot call
+// but accumulates (20x big_none peaked ~397 MB RSS). The pool owns all of them in
+// std::deque containers (NOT std::vector: the algorithm holds raw pointers --
+// r0[i]->next, rule->first/second, pqueue links -- across many later allocations, and
+// deque guarantees stable element addresses where vector realloc would dangle them).
+// A single pool, declared as the FIRST local of _str_to_repair_grammar, is destroyed
+// LAST (after the result is built), freeing everything in one shot on every exit path
+// (normal or exception). Object lifetimes within the call are unchanged.
+//
+class repair_pool {
+public:
+  std::deque<repair_symbol> symbols;
+  std::deque<repair_symbol_record> records;
+  std::deque<repair_guard> guards;
+  std::deque<repair_rule> rules;
+  std::deque<repair_digram> digrams;
+  std::deque<repair_pqueue_node> nodes;
+  repair_symbol* new_symbol(const std::string& str, int index) {
+    symbols.emplace_back(str, index);
+    return &symbols.back();
+  }
+  repair_symbol_record* new_record(repair_symbol* sym) {
+    records.emplace_back(sym);
+    return &records.back();
+  }
+  repair_guard* new_guard(repair_rule* rule, int idx) {
+    guards.emplace_back(rule, idx);
+    return &guards.back();
+  }
+  repair_rule* new_rule() {
+    rules.emplace_back();
+    return &rules.back();
+  }
+  repair_digram* new_digram(const std::string& str, int freq) {
+    digrams.emplace_back(str, freq);
+    return &digrams.back();
+  }
+  repair_pqueue_node* new_node(repair_digram* d) {
+    nodes.emplace_back(d);
+    return &nodes.back();
+  }
+};
+
+//
 // the priority queue taking care about repair digrams ordering.
 //
 // Bucketed (count-indexed) design (Larsson-Moffat): buckets[f] heads a doubly-linked
@@ -218,8 +266,10 @@ public:
   std::vector<repair_pqueue_node*> buckets; // buckets[freq] -> head of that freq's list
   int max_count;                            // highest non-empty bucket index
   std::unordered_map<std::string, repair_pqueue_node*> nodes; // fastmap <digram> -> <node>
+  repair_pool* pool;                        // arena that owns the queue's nodes (not owned here)
   repair_priority_queue() {
     max_count = 0;
+    pool = nullptr;
   }
   repair_digram* enqueue(repair_digram* digram);
   repair_digram* dequeue();
