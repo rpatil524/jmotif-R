@@ -45,6 +45,16 @@ distance value (not the position) can differ by a few percent between
 implementations whose random visit orders differ. This is inherent to the
 heuristic, not a convention gap.
 
+**SAX-VSM** is aligned too. The TF\*IDF weight uses **log1p term frequency,
+`log(1 + tf)`, and a natural-log IDF, `log(N / df)`**, in R, saxpy and the Java
+`sax-vsm_classic` (which previously used the SMART `1 + log(tf)` / `log10`
+scheme). A cross-implementation accuracy study (CBF, Gun_Point, Coffee, Beef,
+OSULeaf, Adiac) found `log1p` ties or beats SMART at the tuned operating point on
+every dataset, so `log1p` is canonical; R already used it, so no R output
+changed. The IDF base (`log` vs `log10`) cancels in the cosine similarity and
+never affects classification. All three score identically on Cylinder-Bell-Funnel
+(900/900 at w=60, p=8, a=6, EXACT).
+
 In 1.3.0 this changed several R outputs versus 1.2.x (z-normalization moved from
 the sample to the population standard deviation, HOT-SAX now z-normalizes its
 distances, RRA was switched to z-normalized distances too, and a PAA boundary
