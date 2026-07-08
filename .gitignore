@@ -1,3 +1,9 @@
 .Rproj.user
 .Rhistory
 .RData
+
+# Cursor / Claude / agent artifacts — never commit
+.cursor/
+.claude/
+audit-report.html
+AGENTS.md
