@@ -26,6 +26,9 @@ Linux may report a non-portable compiler flag (`-mno-omit-leaf-frame-pointer`)
 from the system R build; this is injected by the platform R configuration, not
 the package Makevars.
 
+Win-builder (R-release 4.6.1 ucrt): 0 errors, 0 warnings, 1 NOTE — broken ACM
+URL in README (fixed in subsequent commit). All tests pass on Windows.
+
 ## Downstream dependencies
 
 There are no reverse dependencies.
