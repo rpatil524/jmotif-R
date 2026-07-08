@@ -326,8 +326,9 @@ std::vector<double> _alphabet_to_cuts(int a_size);
 int _count_spaces(std::string *s);
 double _mean(std::vector<double> *ts, int *start, int *end);
 std::vector<double> _znorm(const std::vector<double>& ts, double threshold);
-std::vector<double> _paa(std::vector<double> ts, int paa_num); // deprecated
-std::vector<double> _paa2(std::vector<double> ts, int paa_num);
+void _znorm_slice(const std::vector<double>& ts, int start, int end,
+                  double threshold, std::vector<double>& out);
+std::vector<double> _paa2(const std::vector<double>& ts, int paa_num);
 double _euclidean_dist(std::vector<double>* seq1, std::vector<double>* seq2);
 double _early_abandoned_dist(std::vector<double>* seq1, std::vector<double>* seq2,
                              double upper_limit);
@@ -337,7 +338,7 @@ std::string _series_to_string(std::vector<double> ts, int a_size);
 bool _is_equal_mindist(std::string a, std::string b);
 //
 std::unordered_map<int, std::string> _sax_via_window(
-    std::vector<double> ts, int w_size, int paa_size, int a_size,
+    const std::vector<double>& ts, int w_size, int paa_size, int a_size,
     std::string nr_strategy, double n_threshold);
 
 #endif
