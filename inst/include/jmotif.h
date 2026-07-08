@@ -329,6 +329,8 @@ std::vector<double> _znorm(const std::vector<double>& ts, double threshold);
 void _znorm_slice(const std::vector<double>& ts, int start, int end,
                   double threshold, std::vector<double>& out);
 std::vector<double> _paa2(const std::vector<double>& ts, int paa_num);
+void _paa2_range(const std::vector<double>& ts, int start, int end, int paa_num,
+                 std::vector<double>& out);
 double _euclidean_dist(std::vector<double>* seq1, std::vector<double>* seq2);
 double _early_abandoned_dist(std::vector<double>* seq1, std::vector<double>* seq2,
                              double upper_limit);

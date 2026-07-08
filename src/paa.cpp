@@ -80,3 +80,59 @@ std::vector<double> _paa2(const std::vector<double>& ts, int paa_num) {
   }
   return res;
 }
+
+void _paa2_range(const std::vector<double>& ts, int start, int end, int paa_num,
+                 std::vector<double>& out) {
+
+  int len = end - start;
+
+  if(len < paa_num){
+    stop("'paa_num' size is invalid");
+  }
+
+  if (len == paa_num) {
+    out.resize(paa_num);
+    for (int i = 0; i < paa_num; i++) {
+      out[i] = ts[start + i];
+    }
+    return;
+  }
+
+  out.assign(paa_num, 0.0);
+  double points_per_segment = (double) len / (double) paa_num;
+
+  std::vector<double> breaks(paa_num + 1, 0);
+  for(int i = 0; i < paa_num + 1; i++){
+    breaks[i] = i * points_per_segment;
+  }
+  breaks[paa_num] = (double) len;
+
+  for(int i = 0; i < paa_num; i++){
+
+    double seg_start = breaks[i];
+    double seg_end = breaks[i+1];
+
+    double frac_begin = ceil(seg_start) - seg_start;
+    double frac_end = seg_end - floor(seg_end);
+
+    int full_begin = (int)floor(seg_start);
+    int full_end = (int)ceil(seg_end);
+    if(full_end > len) {
+      full_end = len;
+    }
+
+    double sum_of_elems = 0.0;
+    for (int j = full_begin; j < full_end; j++) {
+      double v = ts[start + j];
+      if (j == full_begin && frac_begin > 0) {
+        v *= frac_begin;
+      }
+      if (j == full_end - 1 && frac_end > 0) {
+        v *= frac_end;
+      }
+      sum_of_elems += v;
+    }
+
+    out[i] = sum_of_elems / points_per_segment;
+  }
+}
