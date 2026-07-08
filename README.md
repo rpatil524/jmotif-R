@@ -90,7 +90,7 @@ Data Mining (ICDM), 2013 IEEE 13th International Conference on, pp.1175,1180, 7-
 [*HOT SAX: Efficiently finding the most unusual time series subsequence*](https://www.cs.ucr.edu/~eamonn/HOT%20SAX%20%20long-ver.pdf),
 In Proc. ICDM (2005)
 
-[7] N.J. Larsson and A. Moffat. [*Offline dictionary-based compression.*](https://ieeexplore.ieee.org/document/755679), In Data Compression Conference, 1999.
+[7] N.J. Larsson and A. Moffat. [*Offline dictionary-based compression.*](https://doi.org/10.1109/dcc.1999.755679), In Data Compression Conference, 1999.
 
 [8] Pavel Senin, Jessica Lin , Xing Wang, Tim Oates, Sunil Gandhi, Arnold P. Boedihardjo, Crystal Chen, Susan Frankenstein, [*Time series anomaly discovery with grammar-based compression.*](https://openproceedings.org/2015/conf/edbt/paper-155.pdf), In Proc. of The International Conference on Extending Database Technology, EDBT 15.
 

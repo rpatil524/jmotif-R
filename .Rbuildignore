@@ -1,7 +1,10 @@
 ^\.git
 ^\.github
 ^\.vscode
+^\.cursor
+^\.claude
 ^\.DS_Store
+^audit-report\.html
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.travis\.yml$
