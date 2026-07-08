@@ -293,7 +293,6 @@ public:
   rule_record() {
     rule_id = -1;
     // rule_use = 0;
-    std::vector<std::pair<int, int>> rule_intervals;
   }
 };
 
@@ -305,7 +304,7 @@ struct rra_discord_record {
   int distance_calls;
 };
 
-std::unordered_map<int, rule_record*> _str_to_repair_grammar(std::string s);
+std::unordered_map<int, rule_record> _str_to_repair_grammar(std::string s);
 Rcpp::List str_to_repair_grammar(CharacterVector str);
 
 Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size,

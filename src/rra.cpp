@@ -95,7 +95,7 @@ double _mean(std::vector<int> *ts, int *start, int *end){
 }
 
 rra_discord_record find_best_rra_discord(std::vector<double> *ts, int w_size,
-      std::unordered_map<int, rule_record*> *grammar, std::vector<int> *indexes,
+      std::unordered_map<int, rule_record> *grammar, std::vector<int> *indexes,
       std::vector<rule_interval> *intervals,
       std::unordered_set<int> *global_visited_positions, double n_threshold,
       int seed = -1){
@@ -158,7 +158,7 @@ rra_discord_record find_best_rra_discord(std::vector<double> *ts, int w_size,
     //   " for rule " << c_interval.rule_id <<
     //    ", best so far dist " << bestSoFarDistance << std::endl;
 
-    auto this_rule_occurrences = grammar->at(c_interval.rule_id)->rule_intervals;
+    auto this_rule_occurrences = grammar->at(c_interval.rule_id).rule_intervals;
 //     Rcout << "   going to iterate over " << this_rule_occurrences.size() <<
 //      " rule occurrences first " << std::endl;
 
@@ -403,7 +403,7 @@ Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size
   //
   // *****
   // tstart = std::chrono::system_clock::now();
-  std::unordered_map<int, rule_record*> grammar = _str_to_repair_grammar(sax_str);
+  std::unordered_map<int, rule_record> grammar = _str_to_repair_grammar(sax_str);
 
   // ****
   // tend = std::chrono::system_clock::now();
@@ -423,7 +423,7 @@ Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size
     if(0 == it->first){
       continue; // skip R0
     }
-    for(auto rit = (it->second)->rule_intervals.begin(); rit != (it->second)->rule_intervals.end(); ++rit) {
+    for(auto rit = it->second.rule_intervals.begin(); rit != it->second.rule_intervals.end(); ++rit) {
       int t_start = rit->first;
       int t_end = rit->second;
       // start and end here is for the string tokens, not for time series points
@@ -444,17 +444,17 @@ Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size
       // GrammarVizAnomaly.java:740): RULE FREQUENCY -- the number of
       // occurrences of this interval's grammar rule, NOT per-point coverage.
       // A rule seen once is, by construction, the most anomalous pattern.
-      rr.cover = (double) (it->second)->rule_intervals.size();
+      rr.cover = (double) it->second.rule_intervals.size();
       intervals.push_back(rr);
     }
   }
 
   // we need to examine the coverage curve for continous zero intervals and mark those
   //
-  rule_record* rec_zero_cover = new rule_record();
-  rec_zero_cover->rule_id = -1;
-  rec_zero_cover->rule_string = "xxx";
-  rec_zero_cover->expanded_rule_string = "xxx";
+  rule_record rec_zero_cover;
+  rec_zero_cover.rule_id = -1;
+  rec_zero_cover.rule_string = "xxx";
+  rec_zero_cover.expanded_rule_string = "xxx";
   bool need_placement = false;
   int start = -1;
   bool in_interval = false;
@@ -528,8 +528,8 @@ Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size
         ri.end=i;
         ri.rule_id=-1;
 
-        rec_zero_cover->rule_occurrences.push_back(start);
-        rec_zero_cover->rule_intervals.push_back(std::make_pair(start, i));
+        rec_zero_cover.rule_occurrences.push_back(start);
+        rec_zero_cover.rule_intervals.push_back(std::make_pair(start, i));
 
         // NOTE: this interval was previously push_back'd TWICE (once before and
         // once after the rec_zero_cover bookkeeping), duplicating every
@@ -548,13 +548,7 @@ Rcpp::DataFrame find_discords_rra(NumericVector series, int w_size, int paa_size
   }
 
   if(need_placement) {
-    grammar.emplace(std::make_pair(-1, rec_zero_cover));
-  } else {
-    // Fix-1 makes the "no zero run survived the guard" path reachable for the
-    // first time (previously every closed run set need_placement = true and
-    // rec_zero_cover was always emplaced into `grammar`). Free the unused
-    // heap-allocated record here so the new path does not leak it.
-    delete rec_zero_cover;
+    grammar.emplace(-1, rec_zero_cover);
   }
 
   // Rank the candidate intervals "rarest first" so the early-abandoning NN
