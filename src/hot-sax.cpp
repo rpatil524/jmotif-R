@@ -11,7 +11,6 @@ discord_record find_best_discord_hotsax(std::vector<double>* ts, int w_size, dou
 
   double best_so_far_distance = 0;
   int best_so_far_index = -1;
-  std::string best_so_far_word = "";
 
   VisitRegistry outerRegistry(ts->size() - w_size, seed);
 
@@ -99,7 +98,6 @@ discord_record find_best_discord_hotsax(std::vector<double>* ts, int w_size, dou
           (nnDistance == best_so_far_distance && candidate_idx < best_so_far_index))){
         best_so_far_distance = nnDistance;
         best_so_far_index = candidate_idx;
-        best_so_far_word = it->second;
         //Rcout << "updated discord record: "<< best_so_far_word << " at " << best_so_far_index <<
         //  " nnDistance " << best_so_far_distance << "\n";
       }

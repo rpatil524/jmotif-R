@@ -1,3 +1,18 @@
+# jmotif 1.3.1
+
+* Memory and performance (Phases 1–4):
+  - Fix memory leaks in RePair grammar (`rule_record` by-value), RRA, and
+    `cosine_sim` (Valgrind-clean on long runs).
+  - HOT-SAX: precompute z-normed sliding windows (~1.4× on ecg0606, ~17× on
+    longer series); identical discord positions and distances.
+  - SAX sliding window: `_paa2` in-place fractional PAA, `_znorm_slice`,
+    unified `_sax_via_window` path (~2.3× on bag construction).
+  - RRA: fused normalized distance, precomputed `w_size` z-norm windows
+    (~1.3× on ecg0606); identical results and distance-call counts.
+* Safety: `idx_to_letter()` validates index range [1, 26].
+* Internal: use `_is_equal_mindist(std::string)` in SAX numerosity reduction;
+  remove unused HOT-SAX state; clarify `cosine_dist()` roxygen.
+
 # Version 1.3.0
 * Cross-implementation alignment with the saxpy (Python) reference and the
   Matrix Profile / MASS convention:

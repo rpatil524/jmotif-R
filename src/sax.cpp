@@ -271,7 +271,7 @@ std::unordered_map<int, std::string> _sax_via_window(
       if (strategy_exact && old_str==curr_str) {
         continue;
       }
-      else if (strategy_mindist && is_equal_mindist(old_str, curr_str) ) {
+      else if (strategy_mindist && _is_equal_mindist(old_str, curr_str) ) {
         continue;
       }
     }
