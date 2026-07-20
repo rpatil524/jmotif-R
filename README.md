@@ -14,7 +14,6 @@
 [![coverage](https://codecov.io/github/jMotif/jmotif-R/graph/badge.svg?branch=master)](https://codecov.io/github/jMotif/jmotif-R?branch=master)
 [![CRAN](https://www.r-pkg.org/badges/version/jmotif)](https://cran.r-project.org/package=jmotif)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL_v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-[![License](https://img.shields.io/github/license/jMotif/jmotif-R)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
 [![downloads](https://cranlogs.r-pkg.org/badges/jmotif?color=brightgreen)](https://www.r-pkg.org/pkg/jmotif)
 
 #### Most of this functionality is also implemented in [Java](https://github.com/jMotif/SAX) and some in [Python](https://github.com/seninp/saxpy) as well...
