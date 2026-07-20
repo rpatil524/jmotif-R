@@ -55,7 +55,9 @@ min_dist <- function(str1, str2, alphabet_size, compression_ratio = 1) {
     stop("error: the strings must have equal length")
   }else{
     if ( any(letters_to_idx(str1) > alphabet_size) |
-        any(letters_to_idx(str2) > alphabet_size)) {
+        any(letters_to_idx(str2) > alphabet_size) |
+        any(letters_to_idx(str1) < 1) |
+        any(letters_to_idx(str2) < 1)) {
            stop('error: some symbol(s) in the string(s) exceed(s)
                 the alphabet size!');
     }else{
@@ -80,5 +82,9 @@ min_dist <- function(str1, str2, alphabet_size, compression_ratio = 1) {
 #' b <- c(2, 1, 1, 1, 1, 0, 1, 1)
 #' sim <- cosine_dist(rbind(a,b))
 cosine_dist <- function(m) {
-  stats::as.dist(1 - m %*% t(m) / (sqrt(rowSums(m ^ 2) %*% t(rowSums(m ^ 2)))))
+  norms_sq <- rowSums(m ^ 2)
+  denom <- sqrt(norms_sq %*% t(norms_sq))
+  sim <- m %*% t(m) / denom
+  sim[denom == 0] <- 0
+  stats::as.dist(1 - sim)
 }

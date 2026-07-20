@@ -338,7 +338,13 @@ Rcpp::DataFrame cosine_sim(Rcpp::List data) {
       norm_a_squared = norm_a_squared + a * a;
       norm_b_squared = norm_b_squared + b * b;
     }
-    cosines[i-1] = sum_a_dot_b / ( sqrt(norm_a_squared) * sqrt(norm_b_squared) );
+    double norm_a = sqrt(norm_a_squared);
+    double norm_b = sqrt(norm_b_squared);
+    if (norm_a == 0.0 || norm_b == 0.0) {
+      cosines[i-1] = 0.0;
+    } else {
+      cosines[i-1] = sum_a_dot_b / (norm_a * norm_b);
+    }
   }
 
   // make results
