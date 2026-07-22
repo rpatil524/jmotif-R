@@ -13,6 +13,19 @@
 * Internal: use `_is_equal_mindist(std::string)` in SAX numerosity reduction;
   remove unused HOT-SAX state; clarify `cosine_dist()` roxygen.
 
+## Unreleased
+
+Post-**1.3.1** (CRAN) documentation, CI, and input guards. No behavioral changes to
+the SAX / discord / VSM / grammar core beyond degenerate-input handling.
+
+* **Safety:** guard degenerate inputs (empty series, invalid parameters); fix
+  `is_equal_mindist` example.
+* **CI / style:** update `.lintr` to lintr 3.x API scoped to package `R/`; fix all
+  lintr style warnings in `R/jmotif.R`.
+* **Docs:** README badge URLs updated; GPL v2 license badge added.
+* **Housekeeping:** ignore and block Cursor/Claude/agent artifacts via `.gitignore` and
+  optional git hooks.
+
 # Version 1.3.0
 * Cross-implementation alignment with the saxpy (Python) reference and the
   Matrix Profile / MASS convention:
