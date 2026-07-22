@@ -18,6 +18,8 @@
 Post-**1.3.1** (CRAN) documentation, CI, and input guards. No behavioral changes to
 the SAX / discord / VSM / grammar core beyond degenerate-input handling.
 
+* **Fixed:** RRA phase-2 visit buffer sized to interval count (was `ts` length,
+  could overflow and segfault when `seed >= 0` triggered random search).
 * **Tests:** tier-B RRA conformance pins on ecg0606 (w100/w120/w150 region and distance).
 * **Safety:** guard degenerate inputs (empty series, invalid parameters); fix
   `is_equal_mindist` example.
