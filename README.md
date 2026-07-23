@@ -16,7 +16,7 @@
 [![License: GPL v2](https://img.shields.io/badge/License-GPL_v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![downloads](https://cranlogs.r-pkg.org/badges/jmotif?color=brightgreen)](https://www.r-pkg.org/pkg/jmotif)
 
-#### Most of this functionality is also implemented in [Java](https://github.com/jMotif/SAX) and [Python (saxpy on PyPI)](https://pypi.org/project/saxpy/2.0.1/) as well...
+**Also available in** [Java](https://github.com/jMotif/SAX) and [Python (saxpy on PyPI)](https://pypi.org/project/saxpy/2.0.1/).
 
 **Published stack (Jul 2026):** jmotif **1.3.2** (CRAN) · saxpy **2.0.1** (PyPI) · jmotif-sax / jmotif-gi / sax-vsm **2.0.2** (Maven Central) · GrammarViz **3.0.4** (Maven Central).
 
@@ -110,12 +110,12 @@ For the development version from GitHub:
     library(devtools)
     install_github('jMotif/jmotif-R')
     
-to start using the library, simply load it into R environment:
+Then load the package:
 
     library(jmotif)
 
 #### 1.0 Time series z-Normalization
-z-normalization (`znorm(ts, threshold)`) is a common to the field of time series patterns mining preprocessing step proposed by Goldin & Kannellakis which helps downstream analyses to focus on the time series structural features.
+z-normalization (`znorm(ts, threshold)`) is a common preprocessing step in time series pattern mining (Goldin & Kannellakis) that helps downstream analyses focus on structural shape rather than absolute scale.
 
     x = seq(0, pi*4, 0.02)
     y = sin(x) * 5 + rnorm(length(x))
@@ -155,7 +155,7 @@ PAA (`paa(ts, paa_num)`) is designed to reduce the input time series dimensional
 #### 3.0 SAX transform
 SAX transform (`series_to_string(ts, alphabet_size)`) is a discretization algorithm which transforms a sequence of rational values (time series points) into a sequence of discrete values - symbols taken from a finite alphabet. This procedure enables the application of numerous algorithms for discrete data analysis to continuous time series data. 
 
-Typically, SAX applied to time series of reduced with PAA dimensionality, which effectively yields a low-dimensional, discrete representation of the input time series which preserves (to some extent) its structural characteristics. By employing this representation it is possible to design efficient algorithms for common time series pattern mining tasks as one can rely on the indexing of data in symbolic space. Note, that before processing with PAA and SAX, time series are z-Normalized.
+SAX is usually applied after PAA reduction, yielding a low-dimensional symbolic representation that preserves much of the series structure and supports indexing in symbolic space. Time series are z-normalized before PAA and SAX.
 
 The figure below illustrates the PAA+SAX procedure: 8 points time series is converted into 3-points PAA representation at the first step, PAA values are converted into letters by using 3 letters alphabet at the second step.
 
@@ -496,11 +496,11 @@ and consists of 15 heartbeats:
 
 ![ECG0606 data](https://raw.githubusercontent.com/jMotif/jmotif-R/master/inst/site/ecg0606.png)
 
-We know, that the third heartbeat of this dataset contains the true anomaly as it was discussed in HOTSAX paper by Eamonn Keogh, Jessica Lin, and Ada Fu. Note, that the authors were specifically interested in finding anomalies which are shorter than a regular heartbeat following a suggestion given by the domain expert: ''_We conferred with cardiologist, Dr. Helga Van Herle M.D., who informed us that heart irregularities can sometimes manifest themselves at scales significantly shorter than a single heartbeat_.'' Figure 13 of the paper further explains the nature of this true anomaly:
+The third heartbeat in this excerpt is the known anomaly from the HOT-SAX paper (Keogh, Lin, and Fu). The authors searched for anomalies **shorter than a regular heartbeat**, following cardiologist Dr. Helga Van Herle: irregularities can appear at scales well below one beat. Figure 13 in the paper illustrates the pattern:
 
 ![ECG0606 clusters](https://raw.githubusercontent.com/jMotif/jmotif-R/master/inst/site/demo-ecg0606_cluster.png)
 
-Two implementation of discord discovery provided within the code: the brute-force discord discovery and HOT-SAX. 
+Two discord discovery implementations ship with the package: brute-force search and HOT-SAX.
 
 The brute-force takes 14 seconds to discover 5 discords in the data (with early-abandoning distance):
 
@@ -558,7 +558,7 @@ In short, RePair performs a recursive pairing step -- finding the most frequent 
 
 As noted by the authors, when compared with online compression algorithms, the disadvantage of Repair having to store a large message in memory for processing is *illusory* when compared with storing the growing dictionary of an online compressor, as the incremental dictionary-based algorithms maintain an equally large message in memory as a part of the dictionary.
 
-Here is an example of RePair grammar for the input string containing an anomaly (`xxx`). Note that none of the grammar rules includes the anomalous terminal symbol.
+Here is an example RePair grammar for an input string containing an anomaly (`xxx`). None of the grammar rules includes the anomalous terminal symbol.
 
     Grammar rule        Expanded grammar rule                        Occurrence in R0
     R0 -> R4 xxx R4     abc abc cba cba bac xxx abc abc cba cba bac  
