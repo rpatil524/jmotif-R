@@ -15,19 +15,17 @@ Not run (no known reverse dependencies with tight coupling).
 
 ### What changed since 1.3.1 (CRAN)
 
-**Bug fix (user-visible):** `find_discords_rra(..., seed = 0L)` (and any non-negative
-seed) could **segfault** when grammar rule intervals outnumbered the series length —
-the phase-2 visit buffer was sized to `length(ts)` instead of the interval count.
+**Bug fix (user-visible):** `find_discords_rra(..., seed = 0L)` could **segfault** when
+grammar rule intervals outnumbered the series length (visit buffer sized to `length(ts)`
+instead of interval count).
 
-**Tests:** tier-B RRA pins on bundled `ecg0606` (exact span/distance at w100/w120;
-w150/p7/a4 rejects zero-gap boundary discords).
+**Tests:** tier-B RRA pins on bundled `ecg0606` (w100/w120 exact span/distance; w150/p7/a4
+rejects zero-gap boundary discords).
 
-**Docs / packaging only otherwise:** README CRAN path, corrected header anchors,
-roxygen examples on SAX-VSM and sliding-window helpers, `NEWS.md` shipped in tarball,
-exclude audit HTML from builds, `DESCRIPTION` summary refresh.
+**Docs / packaging:** README CRAN path; Codecov URL on `app.codecov.io`; roxygen examples;
+`NEWS.md` in tarball; exclude audit HTML; `DESCRIPTION` summary refresh.
 
-No algorithm changes to SAX, HOT-SAX, brute-force, RePair, or SAX-VSM beyond the RRA
-buffer fix.
+No algorithm changes beyond the RRA buffer fix.
 
 ### Previous release (1.3.1) note for CRAN
 

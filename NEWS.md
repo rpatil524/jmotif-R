@@ -10,7 +10,7 @@
   RePair; rename RePair walkthrough to §7.1; link saxpy **2.0.1** on PyPI;
   roxygen `\examples{}` on `sax_via_window`, SAX-VSM bag/TF·IDF helpers, and
   `cosine_sim`; clarify `cosine_dist()` title and `find_discords_rra()` defaults
-  in `.Rd` files.
+  in `.Rd` files; Codecov badge URL → `app.codecov.io` (CRAN incoming check).
 * **Packaging:** ship `NEWS.md` in the tarball; exclude agent audit HTML from
   builds; refresh `DESCRIPTION` summary; roxygen2 8.0.0 metadata.
 
