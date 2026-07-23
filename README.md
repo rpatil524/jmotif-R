@@ -16,7 +16,7 @@
 [![License: GPL v2](https://img.shields.io/badge/License-GPL_v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![downloads](https://cranlogs.r-pkg.org/badges/jmotif?color=brightgreen)](https://www.r-pkg.org/pkg/jmotif)
 
-#### Most of this functionality is also implemented in [Java](https://github.com/jMotif/SAX) and some in [Python](https://github.com/seninp/saxpy) as well...
+#### Most of this functionality is also implemented in [Java](https://github.com/jMotif/SAX) and [Python (saxpy on PyPI)](https://pypi.org/project/saxpy/2.0.1/) as well...
 
 #### Cross-implementation alignment
 
