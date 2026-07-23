@@ -5,6 +5,7 @@
 ^\.claude
 ^\.DS_Store
 ^audit-report\.html
+^AUDIT\.html
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.travis\.yml$
@@ -12,7 +13,6 @@
 .Rprofile
 inst/site
 inst/test_data
-NEWS\.md
 ^\.lintr$
 ^cran-comments.md$
 ^CRAN-RELEASE$

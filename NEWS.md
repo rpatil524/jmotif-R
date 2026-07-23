@@ -1,3 +1,18 @@
+# jmotif 1.3.2
+
+* **Fixed:** RRA phase-2 visit buffer sized to interval count (was `ts` length,
+  could overflow and segfault when `seed >= 0` triggered random search).
+* **Tests:** tier-B RRA conformance pins on ecg0606 (w100/w120/w150 region and distance).
+* **Safety:** guard degenerate inputs (empty series, invalid parameters); fix
+  `is_equal_mindist` example.
+* **Docs:** README lists CRAN install first; fix SAX-VSM anchor and duplicate section
+  numbering; add `\examples{}` on SAX-VSM and sliding-window SAX helpers.
+* **Packaging:** ship `NEWS.md` in the tarball; exclude agent audit HTML from builds.
+* **CI / style:** update `.lintr` to lintr 3.x API scoped to package `R/`; fix all
+  lintr style warnings in `R/jmotif.R`.
+* **Housekeeping:** ignore and block Cursor/Claude/agent artifacts via `.gitignore` and
+  optional git hooks.
+
 # jmotif 1.3.1
 
 * Memory and performance (Phases 1–4):
@@ -13,24 +28,7 @@
 * Internal: use `_is_equal_mindist(std::string)` in SAX numerosity reduction;
   remove unused HOT-SAX state; clarify `cosine_dist()` roxygen.
 
-## Unreleased
-
-Post-**1.3.1** (CRAN) documentation, CI, and input guards. No behavioral changes to
-the SAX / discord / VSM / grammar core beyond degenerate-input handling.
-
-* **Fixed:** RRA phase-2 visit buffer sized to interval count (was `ts` length,
-  could overflow and segfault when `seed >= 0` triggered random search).
-* **Tests:** tier-B RRA conformance pins on ecg0606 (w100/w120/w150 region and distance).
-* **Safety:** guard degenerate inputs (empty series, invalid parameters); fix
-  `is_equal_mindist` example.
-* **CI / style:** update `.lintr` to lintr 3.x API scoped to package `R/`; fix all
-  lintr style warnings in `R/jmotif.R`.
-* **Docs:** README badge URLs updated; GPL v2 license badge added.
-* **Housekeeping:** ignore and block Cursor/Claude/agent artifacts via `.gitignore` and
-  optional git hooks.
-
 # Version 1.3.0
-* Cross-implementation alignment with the saxpy (Python) reference and the
   Matrix Profile / MASS convention:
   - znorm now uses POPULATION standard deviation (divide by n) instead of
     sample std (n-1). Each normalized window then has empirical variance

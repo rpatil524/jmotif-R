@@ -4,8 +4,8 @@
  * **[SAX](https://github.com/jMotif/jmotif-R#30-sax-transform)**, i.e., Symbolic Aggregate approXimation
  * **[HOT-SAX](https://github.com/jMotif/jmotif-R#70-hot-sax-algorithm-for-time-series-discord-discovery)**, an algorithm for the exact time series discord discovery
  * **[VSM](https://github.com/jMotif/jmotif-R#52-tfidf-weighting)**, i.e., Vector Space Model
- * **[SAX-VSM](https://github.com/jMotif/jmotif-R#70-hot-sax-algorithm-for-time-series-discord-discovery)**, an algorithm for interpretable time series classification (and parameters optimization)
- * **[RePair](https://github.com/jMotif/jmotif-R#70-grammatical-inference-with-repair)**, an algorithm for grammatical inference
+ * **[SAX-VSM](https://github.com/jMotif/jmotif-R#50-sax-vsm-classifier)**, an algorithm for interpretable time series classification (and parameters optimization)
+ * **[RePair](https://github.com/jMotif/jmotif-R#71-grammatical-inference-with-repair)**, an algorithm for grammatical inference
  * **[Rule Density Curve](https://github.com/jMotif/jmotif-R#80-rule-density-curve)**, an efficient grammatical compression (i.e. [Kolmogorov Complexity](https://en.wikipedia.org/wiki/Kolmogorov_complexity)) -based technique for variable length approximate time series anomaly discovery
  * **[RRA](https://github.com/jMotif/jmotif-R#90-rare-rule-anomaly-algorithm)** (Rare Rule Anomaly), a grammatical compression (i.e. [Kolmogorov Complexity](https://en.wikipedia.org/wiki/Kolmogorov_complexity)) -based algorithm for variable length exact time series anomaly discovery
  
@@ -94,7 +94,14 @@ In Proc. ICDM (2005)
 [8] Pavel Senin, Jessica Lin , Xing Wang, Tim Oates, Sunil Gandhi, Arnold P. Boedihardjo, Crystal Chen, Susan Frankenstein, [*Time series anomaly discovery with grammar-based compression.*](https://openproceedings.org/2015/conf/edbt/paper-155.pdf), In Proc. of The International Conference on Extending Database Technology, EDBT 15.
 
 
-#### 0.0 Installation from latest sources
+#### 0.0 Installation
+
+From CRAN:
+
+    install.packages("jmotif")
+
+For the development version from GitHub:
+
     install.packages("devtools")
     library(devtools)
     install_github('jMotif/jmotif-R')
@@ -540,7 +547,7 @@ The output is already ordered by the nearest neighbor distance; `dplyr` can be u
     4    2.375541       25          37458
     5    2.064930     1198          51536
 
-#### 7.0 Grammatical inference with RePair
+#### 7.1 Grammatical inference with RePair
 RePair is a dictionary-based compression method proposed in 1999 by Larsson and Moffat. In contrast with Sequitur, Repair is an *off-line algorithm* that requires the whole input sequence to be accessible before building a grammar. Similar to Sequitur, RePair also can be utilized as a grammar-based compressor able to discover a compact grammar that generates the text. It is a remarkably simple algorithm which is known for its very fast decompression. 
 
 In short, RePair performs a recursive pairing step -- finding the most frequent pair of symbols in the input sequence and replacing it with a new symbol -- until every pair appears only once.
