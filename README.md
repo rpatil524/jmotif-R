@@ -100,8 +100,7 @@ From CRAN (stable):
 
     install.packages("jmotif")
 
-GitHub `master` is at **1.3.2** (RRA buffer fix + tier-B tests); CRAN may still list
-**1.3.1** until the next release is accepted. See [NEWS.md](NEWS.md).
+**1.3.2** is the current CRAN release (RRA buffer fix, tier-B tests). See [NEWS.md](NEWS.md).
 
 For the development version from GitHub:
 
