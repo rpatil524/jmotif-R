@@ -18,6 +18,8 @@
 
 #### Most of this functionality is also implemented in [Java](https://github.com/jMotif/SAX) and [Python (saxpy on PyPI)](https://pypi.org/project/saxpy/2.0.1/) as well...
 
+**Published stack (Jul 2026):** jmotif **1.3.2** (CRAN) · saxpy **2.0.1** (PyPI) · jmotif-sax / jmotif-gi / sax-vsm **2.0.2** (Maven Central) · GrammarViz **3.0.4** (Maven Central).
+
 #### Cross-implementation alignment
 
 As of 1.3.0 the R/C++, Python ([saxpy](https://github.com/seninp/saxpy)), and
