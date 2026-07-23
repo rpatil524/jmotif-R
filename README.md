@@ -96,9 +96,12 @@ In Proc. ICDM (2005)
 
 #### 0.0 Installation
 
-From CRAN:
+From CRAN (stable):
 
     install.packages("jmotif")
+
+GitHub `master` is at **1.3.2** (RRA buffer fix + tier-B tests); CRAN may still list
+**1.3.1** until the next release is accepted. See [NEWS.md](NEWS.md).
 
 For the development version from GitHub:
 
@@ -663,7 +666,7 @@ and use RePair implementation to build the grammar curve:
 #### 9.0 Rare Rule Anomaly algorithm.
 RRA (i.e., Rare Rule Anomaly) algorithm extends the HOT-SAX algorithm leveraging the grammatical compression properties (i.e. algorithmic, or Kolmogorov complexity properties). In contrast with the original algorithm, whose input is a set of time series subsequences extracted from the input time series via sliding window, RRA operates on the set of time series subsequences which correspond to a grammar' rules. The grammar, whose rules are used in RRA, is built by a grammar inference algorithm run on the set of tokens which are obtained by time series discretization with SAX and a sliding window (i.e. a HOT-SAX input). jmotif-R is using Re-Pair algorithm for grammatical inference.
 
-Since each of the grammar rules consists of terminal and non-terminal tokens, the subsequences corresponding to rules naturally vary in length. Moreover, due to the compression properties of the utilized grammatical inference algorithm, which operates on digrams (i.e. pairs of subsequences extracted via sliding window), the amount of input subsequences for RAA is usually significantly lower than those extracted via sliding window for HOT-SAX, which improves the efficiency of HOT-SAX inner and outer loops by reducing the number of calls to the distance function. 
+Since each of the grammar rules consists of terminal and non-terminal tokens, the subsequences corresponding to rules naturally vary in length. Moreover, due to the compression properties of the utilized grammatical inference algorithm, which operates on digrams (i.e. pairs of subsequences extracted via sliding window), the amount of input subsequences for RRA is usually significantly lower than those extracted via sliding window for HOT-SAX, which improves the efficiency of HOT-SAX inner and outer loops by reducing the number of calls to the distance function. 
 
 In addition to the above, RRA uses a different heuristics for the ordering in the HOT-SAX outer loop: instead of ordering subsequences by their occurrence frequency, the rule-corresponding subsequences are ordered according to the "rule coverage" values discussed above -- a value which reflects the compressibility of the subsequence. Naturally, we expect that incompressible subsequences correspond to potential anomalies.
 
@@ -679,4 +682,13 @@ distance value (not the discord position) can differ by a few percent between
 implementations whose visit orders differ. This is inherent to the heuristic --
 exactness of the distance is not guaranteed -- not a cross-implementation defect.
 
+## Version history
+
+Release notes live in [NEWS.md](NEWS.md). Highlights:
+
+| Version | Why it matters |
+|---------|----------------|
+| **1.3.2** | **Bug fix:** RRA no longer segfaults with `seed >= 0` (visit buffer overflow). Tier-B ecg0606 conformance tests. Docs/packaging polish. |
+| **1.3.1** | Memory-leak fixes; HOT-SAX / SAX-window / RRA speedups (same results). |
+| **1.3.0** | Cross-impl alignment with saxpy/Java (z-norm, PAA boundary, z-normed discord distances). **Behavior changes vs 1.2.x.** |
 

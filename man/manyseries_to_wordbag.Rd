@@ -24,7 +24,8 @@ Converts a set of time-series into a single bag of words.
 }
 \examples{
 data(CBF)
-manyseries_to_wordbag(CBF[["data_train"]][CBF[["labels_train"]] == 1,], 60, 6, 6, "exact", 0.01)
+train <- CBF[["data_train"]]
+manyseries_to_wordbag(train[CBF[["labels_train"]] == 1, ], 60, 6, 6, "exact", 0.01)
 }
 \references{
 Senin Pavel and Malinchik Sergey,

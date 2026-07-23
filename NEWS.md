@@ -1,17 +1,18 @@
 # jmotif 1.3.2
 
-* **Fixed:** RRA phase-2 visit buffer sized to interval count (was `ts` length,
-  could overflow and segfault when `seed >= 0` triggered random search).
-* **Tests:** tier-B RRA conformance pins on ecg0606 (w100/w120/w150 region and distance).
-* **Safety:** guard degenerate inputs (empty series, invalid parameters); fix
-  `is_equal_mindist` example.
-* **Docs:** README lists CRAN install first; fix SAX-VSM anchor and duplicate section
-  numbering; add `\examples{}` on SAX-VSM and sliding-window SAX helpers.
-* **Packaging:** ship `NEWS.md` in the tarball; exclude agent audit HTML from builds.
-* **CI / style:** update `.lintr` to lintr 3.x API scoped to package `R/`; fix all
-  lintr style warnings in `R/jmotif.R`.
-* **Housekeeping:** ignore and block Cursor/Claude/agent artifacts via `.gitignore` and
-  optional git hooks.
+* **Fixed:** RRA phase-2 `visit_array` buffer sized to grammar interval count (was
+  series length); could overflow and **segfault** when `seed >= 0` enabled the
+  seeded random-search path. Tier-B tests now exercise `seed = 0` on ecg0606.
+* **Tests:** tier-B RRA conformance pins on ecg0606 — exact span and NN distance at
+  w100 and w120 (`seed = 0`); w150/p7/a4 asserts the top discord is not a
+  zero-distance boundary gap.
+* **Docs:** README lists CRAN install first; fix header anchors for SAX-VSM and
+  RePair; rename RePair walkthrough to §7.1; link saxpy **2.0.1** on PyPI;
+  roxygen `\examples{}` on `sax_via_window`, SAX-VSM bag/TF·IDF helpers, and
+  `cosine_sim`; clarify `cosine_dist()` title and `find_discords_rra()` defaults
+  in `.Rd` files.
+* **Packaging:** ship `NEWS.md` in the tarball; exclude agent audit HTML from
+  builds; refresh `DESCRIPTION` summary; roxygen2 8.0.0 metadata.
 
 # jmotif 1.3.1
 

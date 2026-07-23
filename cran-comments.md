@@ -1,34 +1,35 @@
-## Submission
+## jmotif 1.3.2 — CRAN submission
 
-This is a maintenance / performance release (1.3.1) of the jmotif package.
+### Test environments
+* local: macOS, R 4.x, `R CMD check` OK (with `--as-cran` recommended on poptiplex before upload)
+* GitHub Actions: ubuntu / macos / windows, R release
 
-It fixes memory leaks in the native RePair/RRA/cosine_sim paths, improves HOT-SAX,
-SAX sliding-window, and RRA distance performance, and adds a bounds check in
-`idx_to_letter()`. There are no intentional behavioral changes relative to 1.3.0;
-discord positions, distances, and SAX outputs are unchanged (169 tests).
+### R CMD check results
+0 errors | 0 warnings | 0 notes (verify on submit box)
 
-There are no reverse dependencies on CRAN.
+### Downstream dependencies
+None known.
 
-## Test environments
+### revdepcheck
+Not run (no known reverse dependencies with tight coupling).
 
-* macOS (local), R 4.6.1 — `R CMD check --as-cran --no-manual`
-* Ubuntu 24.04 (poptiplex), R 4.6.1 — `R CMD check --as-cran --no-manual`
-* win-builder (devel and release) — submitted 2026-07-08
+### What changed since 1.3.1 (CRAN)
 
-## R CMD check results
+**Bug fix (user-visible):** `find_discords_rra(..., seed = 0L)` (and any non-negative
+seed) could **segfault** when grammar rule intervals outnumbered the series length —
+the phase-2 visit buffer was sized to `length(ts)` instead of the interval count.
 
-0 errors | 0 warnings | 0–1 notes (local `--no-manual` runs)
+**Tests:** tier-B RRA pins on bundled `ecg0606` (exact span/distance at w100/w120;
+w150/p7/a4 rejects zero-gap boundary discords).
 
-Local runs without a full LaTeX/pandoc/HTML-tidy toolchain report environment-only
-notes for the PDF/HTML manual; these do not occur on CRAN build machines.
+**Docs / packaging only otherwise:** README CRAN path, corrected header anchors,
+roxygen examples on SAX-VSM and sliding-window helpers, `NEWS.md` shipped in tarball,
+exclude audit HTML from builds, `DESCRIPTION` summary refresh.
 
-Linux may report a non-portable compiler flag (`-mno-omit-leaf-frame-pointer`)
-from the system R build; this is injected by the platform R configuration, not
-the package Makevars.
+No algorithm changes to SAX, HOT-SAX, brute-force, RePair, or SAX-VSM beyond the RRA
+buffer fix.
 
-Win-builder (R-release 4.6.1 ucrt): 0 errors, 0 warnings, 1 NOTE — broken ACM
-URL in README (fixed in subsequent commit). All tests pass on Windows.
+### Previous release (1.3.1) note for CRAN
 
-## Downstream dependencies
-
-There are no reverse dependencies.
+1.3.1 was a performance / memory release with identical numerical results on regression
+tests; 1.3.0 introduced intentional behavioral alignment changes (documented in NEWS).
